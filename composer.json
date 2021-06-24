@@ -1,0 +1,21 @@
+{
+    "name": "delta935142/ecpay",
+    "description": "Laravel ECPAY Package",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Delta935142\\Ecpay\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Delta935142",
+            "email": "s303446@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^7.2.5 || ^8.0"
+    }
+}
