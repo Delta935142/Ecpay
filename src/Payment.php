@@ -9,8 +9,6 @@ use Delta935142\Ecpay\SDK\Abstracts\InvType;
 
 Class Payment
 {
-    const HOST = 'https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5';
-
     /**
      * 訂單編號
      *
@@ -44,7 +42,7 @@ Class Payment
      *
      * @var string
      */
-    protected static $returnUrl = 'http://www.ecpay.com.tw/receive.php';
+    protected static $returnUrl;
 
     /**
      * 商品
@@ -161,11 +159,14 @@ Class Payment
     {
         $obj = new AllInOne();
 
-        $obj->ServiceURL  = env('ECPAY_HOST', self::HOST);
-        $obj->HashKey     = env('ECPAY_HASH_KEY', '');
-        $obj->HashIV      = env('ECPAY_HASH_IV', '');
-        $obj->MerchantID  = env('ECPAY_MERCHANT_ID', '');
-        $obj->EncryptType = env('ECPAY_ENCRYPT_TYPE', 1);
+        $obj->ServiceURL = (config('ecpay.test_mode'))
+            ? config('ecpay.dev_host')
+            : config('ecpay.host');
+
+        $obj->HashKey     = config('ecpay.hash_key');
+        $obj->HashIV      = config('ecpay.hash_iv');
+        $obj->MerchantID  = config('ecpay.merchant_id');
+        $obj->EncryptType = config('ecpay.encrypt_type');
 
         $orderId = self::$tradeNo ?? uniqid();
 
@@ -173,7 +174,7 @@ Class Payment
         $obj->Send['MerchantTradeDate'] = self::$tradeDateTime ?? date('Y/m/d H:i:s');
         $obj->Send['TradeDesc']         = self::$tradeDesc ?? $orderId;
         $obj->Send['TotalAmount']       = self::$total;
-        $obj->Send['ReturnURL']         = self::$returnUrl;
+        $obj->Send['ReturnURL']         = self::$returnUrl ?? config('ecpay.return_url');
         $obj->Send['ChoosePayment']     = 'Credit';
         $obj->Send['IgnorePayment']     = 'GooglePay';
         $obj->Send['Items']             = self::$items;
@@ -216,11 +217,14 @@ Class Payment
     {
         $obj = new AllInOne();
 
-        $obj->ServiceURL  = env('ECPAY_HOST', self::HOST);
-        $obj->HashKey     = env('ECPAY_HASH_KEY', '');
-        $obj->HashIV      = env('ECPAY_HASH_IV', '');
-        $obj->MerchantID  = env('ECPAY_MERCHANT_ID', '');
-        $obj->EncryptType = env('ECPAY_ENCRYPT_TYPE', 1);
+        $obj->ServiceURL = (config('ecpay.test_mode'))
+            ? config('ecpay.dev_host')
+            : config('ecpay.host');
+
+        $obj->HashKey     = config('ecpay.hash_key');
+        $obj->HashIV      = config('ecpay.hash_iv');
+        $obj->MerchantID  = config('ecpay.merchant_id');
+        $obj->EncryptType = config('ecpay.encrypt_type');
 
         $orderId = self::$tradeNo ?? uniqid();
 
@@ -228,12 +232,43 @@ Class Payment
         $obj->Send['MerchantTradeDate'] = self::$tradeDateTime ?? date('Y/m/d H:i:s');
         $obj->Send['TradeDesc']         = self::$tradeDesc ?? $orderId;
         $obj->Send['TotalAmount']       = self::$total;
-        $obj->Send['ReturnURL']         = self::$returnUrl;
+        $obj->Send['ReturnURL']         = self::$returnUrl ?? config('ecpay.return_url');
         $obj->Send['ChoosePayment']     = 'ATM';
         $obj->Send['Items']             = self::$items;
 
         $obj->SendExtend['ExpireDate']     = $expire;
         $obj->SendExtend['PaymentInfoURL'] = "";            //伺服器端回傳付款相關資訊。
+
+        $obj->CheckOut();
+    }
+
+    /**
+     * WebATM
+     *
+     * @return void
+     */
+    public function webATM()
+    {
+        $obj = new AllInOne();
+
+        $obj->ServiceURL = (config('ecpay.test_mode'))
+            ? config('ecpay.dev_host')
+            : config('ecpay.host');
+
+        $obj->HashKey     = config('ecpay.hash_key');
+        $obj->HashIV      = config('ecpay.hash_iv');
+        $obj->MerchantID  = config('ecpay.merchant_id');
+        $obj->EncryptType = config('ecpay.encrypt_type');
+
+        $orderId = self::$tradeNo ?? uniqid();
+
+        $obj->Send['ReturnURL']         = self::$returnUrl ?? config('ecpay.return_url');
+        $obj->Send['MerchantTradeNo']   = $orderId;                     
+        $obj->Send['MerchantTradeDate'] = self::$tradeDateTime ?? date('Y/m/d H:i:s'); 
+        $obj->Send['TotalAmount']       = self::$total;                
+        $obj->Send['TradeDesc']         = self::$tradeDesc ?? $orderId;
+        $obj->Send['ChoosePayment']     = 'WebATM';
+        $obj->Send['Items']             = self::$items;
 
         $obj->CheckOut();
     }

@@ -23,6 +23,17 @@ class EcpayServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        $this->publishing();
+    }
+
+    protected function publishing()
+    {
+        if (! function_exists('config_path')) {
+            return;
+        }
+
+        $this->publishes([
+            __DIR__.'/../../config/ecpay.php' => config_path('ecpay.php'),
+        ], 'config');
     }
 }
