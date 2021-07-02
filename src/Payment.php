@@ -2,57 +2,10 @@
 
 namespace Delta935142\Ecpay;
 
-use Delta935142\Ecpay\SDK\AllInOne;
-use Delta935142\Ecpay\SDK\Abstracts\InvoiceState;
-use Delta935142\Ecpay\SDK\Abstracts\TaxType;
-use Delta935142\Ecpay\SDK\Abstracts\InvType;
-
-Class Payment
+Class Payment extends \Delta935142\Ecpay\Requests\Payment
 {
     /**
-     * 訂單編號
-     *
-     * @var string
-     */
-    protected static $tradeNo = '';
-
-    /**
-     * 交易時間
-     *
-     * @var string
-     */
-    protected static $tradeDateTime;
-
-    /**
-     * 交易描述
-     *
-     * @var string
-     */
-    protected static $tradeDesc;
-
-    /**
-     * 交易金額
-     *
-     * @var integer
-     */
-    protected static $total = 0;
-
-    /**
-     * 回傳網址
-     *
-     * @var string
-     */
-    protected static $returnUrl;
-
-    /**
-     * 商品
-     *
-     * @var array
-     */
-    protected static $items = [];
-
-    /**
-     * set trade no
+     * 設定訂單編號
      *
      * @param string $tradeNo
      * @return Payment
@@ -65,7 +18,7 @@ Class Payment
     }
 
     /**
-     * set trade datetime
+     * 設定交易時間
      *
      * @param string $datetime
      * @return Payment
@@ -78,7 +31,7 @@ Class Payment
     }
 
     /**
-     * set trade description
+     * 設定交易描述
      *
      * @param string $text
      * @return Payment
@@ -91,7 +44,7 @@ Class Payment
     } 
 
     /**
-     * set total amount
+     * 設定總金額
      *
      * @param integer $total
      * @return Payment
@@ -104,7 +57,7 @@ Class Payment
     }
     
     /**
-     * set return url
+     * 設定回傳網址
      *
      * @param string $url
      * @return Payment
@@ -117,7 +70,7 @@ Class Payment
     }
 
     /**
-     * add item
+     * 加入品項
      * 
      * ['Name' => "歐付寶黑芝麻豆漿", 'Price' => 2000, 'Currency' => "元", 'Quantity' => 1, 'URL' => "dedwed"]
      *
@@ -126,13 +79,22 @@ Class Payment
      */
     public static function item(array $item): Payment
     {
-        array_push(self::$items, $item);
+        $row = [
+            'Name'     => $item['name'],
+            'Price'    => $item['price'],
+            'Currency' => $item['currency'],
+            'Quantity' => $item['quantity']
+        ];
+
+        if (isset($item['url'])) $row['URL'] = $item['url'];
+
+        array_push(self::$items, $row);
 
         return new self();
     }
 
     /**
-     * set items
+     * 設定品項
      *
      * [['Name' => "歐付寶黑芝麻豆漿", 'Price' => 2000, 'Currency' => "元", 'Quantity' => 1, 'URL' => "dedwed"]]
      * 
@@ -141,136 +103,55 @@ Class Payment
      */
     public static function items(array $items): Payment
     {
-        self::$items = $items;
+        $arr = [];
+
+        foreach ($items as $item) {
+            $arr[] = [
+                'Name'     => $item['name'],
+                'Price'    => $item['price'],
+                'Currency' => $item['currency'],
+                'Quantity' => $item['quantity']
+            ];
+
+            if (isset($item['url'])) $arr[]['URL'] = $item['url'];
+        }
+
+        self::$items = $arr;
 
         return new self();
     }
 
     /**
-     * 信用卡付款
+     * 設定分店ID
      *
-     * @param integer $installment 分期[3,6,12,18,24]
-     * @param integer $amount 分期金額
-     * @param boolean $redeem 紅利折抵
-     * @param boolean $unionPay 聯營卡
-     * @return void
+     * @param string $id
+     * @return Payment
      */
-    public static function credit(int $installment = 0, int $amount = 0, bool $redeem = false, bool $unionPay = false)
+    public static function storeID(string $id): Payment
     {
-        $obj = new AllInOne();
+        self::$storeID = $id;
 
-        $obj->ServiceURL = (config('ecpay.test_mode'))
-            ? config('ecpay.dev_host')
-            : config('ecpay.host');
+        return new self();
+    }
 
-        $obj->HashKey     = config('ecpay.hash_key');
-        $obj->HashIV      = config('ecpay.hash_iv');
-        $obj->MerchantID  = config('ecpay.merchant_id');
-        $obj->EncryptType = config('ecpay.encrypt_type');
+    public static function customFields(array $arr): Payment
+    {
+        self::$customFields = $arr;
 
-        $orderId = self::$tradeNo ?? uniqid();
-
-        $obj->Send['MerchantTradeNo']   = $orderId;
-        $obj->Send['MerchantTradeDate'] = self::$tradeDateTime ?? date('Y/m/d H:i:s');
-        $obj->Send['TradeDesc']         = self::$tradeDesc ?? $orderId;
-        $obj->Send['TotalAmount']       = self::$total;
-        $obj->Send['ReturnURL']         = self::$returnUrl ?? config('ecpay.return_url');
-        $obj->Send['ChoosePayment']     = 'Credit';
-        $obj->Send['IgnorePayment']     = 'GooglePay';
-        $obj->Send['Items']             = self::$items;
-
-        $obj->SendExtend['CreditInstallment'] = $installment;
-        $obj->SendExtend['InstallmentAmount'] = $amount;
-        $obj->SendExtend['Redeem']            = $redeem;
-        $obj->SendExtend['UnionPay']          = $unionPay;
-
-        # 電子發票參數
-        /*
-        $obj->Send['InvoiceMark'] = InvoiceState::Yes;
-        $obj->SendExtend['RelateNumber'] = "Test".time();
-        $obj->SendExtend['CustomerEmail'] = 'test@ecpay.com.tw';
-        $obj->SendExtend['CustomerPhone'] = '0911222333';
-        $obj->SendExtend['TaxType'] = TaxType::Dutiable;
-        $obj->SendExtend['CustomerAddr'] = '台北市南港區三重路19-2號5樓D棟';
-        $obj->SendExtend['InvoiceItems'] = array();
-        // 將商品加入電子發票商品列表陣列
-        foreach ($obj->Send['Items'] as $info) {
-            array_push($obj->SendExtend['InvoiceItems'],array('Name' => $info['Name'],'Count' =>
-                $info['Quantity'],'Word' => '個','Price' => $info['Price'],'TaxType' => TaxType::Dutiable));
-        }
-        $obj->SendExtend['InvoiceRemark'] = '測試發票備註';
-        $obj->SendExtend['DelayDay'] = '0';
-        $obj->SendExtend['InvType'] = InvType::General;
-        */
-
-        //產生訂單(auto submit至ECPay)
-        $obj->CheckOut();
+        return new self();
     }
 
     /**
-     * ATM
+     * 設定發票
      *
-     * @param integer $expire 繳費期限(天)
-     * @return void
+     * @param Invoice $invoice
+     * @return Payment
      */
-    public static function atm(int $expire = 3)
+    public static function invoice(Invoice $invoice): Payment
     {
-        $obj = new AllInOne();
+        self::$invoice = $invoice;
 
-        $obj->ServiceURL = (config('ecpay.test_mode'))
-            ? config('ecpay.dev_host')
-            : config('ecpay.host');
-
-        $obj->HashKey     = config('ecpay.hash_key');
-        $obj->HashIV      = config('ecpay.hash_iv');
-        $obj->MerchantID  = config('ecpay.merchant_id');
-        $obj->EncryptType = config('ecpay.encrypt_type');
-
-        $orderId = self::$tradeNo ?? uniqid();
-
-        $obj->Send['MerchantTradeNo']   = $orderId;
-        $obj->Send['MerchantTradeDate'] = self::$tradeDateTime ?? date('Y/m/d H:i:s');
-        $obj->Send['TradeDesc']         = self::$tradeDesc ?? $orderId;
-        $obj->Send['TotalAmount']       = self::$total;
-        $obj->Send['ReturnURL']         = self::$returnUrl ?? config('ecpay.return_url');
-        $obj->Send['ChoosePayment']     = 'ATM';
-        $obj->Send['Items']             = self::$items;
-
-        $obj->SendExtend['ExpireDate']     = $expire;
-        $obj->SendExtend['PaymentInfoURL'] = "";            //伺服器端回傳付款相關資訊。
-
-        $obj->CheckOut();
-    }
-
-    /**
-     * WebATM
-     *
-     * @return void
-     */
-    public function webATM()
-    {
-        $obj = new AllInOne();
-
-        $obj->ServiceURL = (config('ecpay.test_mode'))
-            ? config('ecpay.dev_host')
-            : config('ecpay.host');
-
-        $obj->HashKey     = config('ecpay.hash_key');
-        $obj->HashIV      = config('ecpay.hash_iv');
-        $obj->MerchantID  = config('ecpay.merchant_id');
-        $obj->EncryptType = config('ecpay.encrypt_type');
-
-        $orderId = self::$tradeNo ?? uniqid();
-
-        $obj->Send['ReturnURL']         = self::$returnUrl ?? config('ecpay.return_url');
-        $obj->Send['MerchantTradeNo']   = $orderId;                     
-        $obj->Send['MerchantTradeDate'] = self::$tradeDateTime ?? date('Y/m/d H:i:s'); 
-        $obj->Send['TotalAmount']       = self::$total;                
-        $obj->Send['TradeDesc']         = self::$tradeDesc ?? $orderId;
-        $obj->Send['ChoosePayment']     = 'WebATM';
-        $obj->Send['Items']             = self::$items;
-
-        $obj->CheckOut();
+        return new self();
     }
 }
 
