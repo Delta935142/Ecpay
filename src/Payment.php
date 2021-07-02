@@ -134,6 +134,12 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
         return new self();
     }
 
+    /**
+     * 設定自訂欄位
+     *
+     * @param array $arr
+     * @return Payment
+     */
     public static function customFields(array $arr): Payment
     {
         self::$customFields = $arr;
