@@ -41,8 +41,8 @@ class Send extends Aio
 
         //生成表單，自動送出
         $szHtml = parent::HtmlEncode($target, $arParameters, $ServiceURL, $szCheckMacValue, '');
-        echo $szHtml ;
-        exit;
+
+        return $szHtml;
     }
 
     static function CheckOutString($paymentButton = 'Submit',$target = "_self",$arParameters = array(),$arExtend = array(),$HashKey='',$HashIV='',$ServiceURL='')

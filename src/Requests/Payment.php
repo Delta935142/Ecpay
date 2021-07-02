@@ -107,7 +107,7 @@ Class Payment
 
         $obj = self::setInvoice($obj);
 
-        $obj->CheckOut();
+        return $obj->CheckOut();
     }
 
     /**
@@ -142,7 +142,7 @@ Class Payment
 
         $obj = self::setInvoice($obj);
 
-        $obj->CheckOut();
+        return $obj->CheckOut();
     }
 
     /**
@@ -173,7 +173,7 @@ Class Payment
 
         $obj = self::setInvoice($obj);
 
-        $obj->CheckOut();
+        return $obj->CheckOut();
     }
 
     /**
