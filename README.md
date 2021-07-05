@@ -1,4 +1,4 @@
-# Laravel 綠界金流套件
+# Laravel 綠界金流非官方套件
 
 ## 安裝
 安裝套件需要先安裝 Composer
@@ -57,7 +57,7 @@ class YourClass
     }
 }
 ```
-信用卡交易可填入四個參數，integer 分期數(3,6,12,18,24)、integer 分期金額、boolean 紅利折抵、boolean 聯營卡。
+信用卡交易可填入四個參數，integer 分期數(3,6,12,18,24)、integer 分期金額、boolean 是否紅利折抵、boolean 是否聯營卡。
 
 #### ATM
 
