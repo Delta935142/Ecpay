@@ -50,7 +50,10 @@ class YourClass
 {
     public function yourMethod()
     {
-        return Payment::credit();
+        return Payment::tradeNo('Test'.date('YmdHis'))
+            ->total(100)
+            ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
+            ->credit();
     }
 }
 ```
@@ -70,7 +73,10 @@ class YourClass
 {
     public function yourMethod()
     {
-        return Payment::ATM();
+        return Payment::tradeNo('Test'.date('YmdHis'))
+            ->total(100)
+            ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
+            ->ATM();
     }
 }
 ```
@@ -90,7 +96,22 @@ class YourClass
 {
     public function yourMethod()
     {
-        return Payment::WebATM();
+        return Payment::tradeNo('Test'.date('YmdHis'))
+            ->total(100)
+            ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
+            ->WebATM();
     }
 }
 ```
+
+#### 方法
+
+- `tradeNo(string $tradeNo)`: 交易代號。
+- `tradeDateTime(string $datetime)`: 交易時間。
+- `tradeDesc(string $text)`: 交易描述。
+- `total(int $total)`: 總金額。
+- `returnUrl(string $url)`: 回傳網址。
+- `items(array $items)`: 項目。如上面範例。
+- `storeID(string $id)`: 分店代號。
+- `customFields(array $arr)`: 自訂欄位。
+- `invoice(Invoice $invoice)`: 發票物件。
