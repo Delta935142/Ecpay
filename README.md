@@ -114,4 +114,4 @@ class YourClass
 - `returnUrl(string $url)`: 回傳網址。
 - `items(array $items)`: 項目。如上面範例。
 - `storeID(string $id)`: 分店代號。
-- `customFields(array $arr)`: 自訂欄位。
+- `customFields(array $arr)`: 自訂欄位，最多四組。ex: ['custom1', 'custom2', 'custom3', 'custom4']。
