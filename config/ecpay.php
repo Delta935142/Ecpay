@@ -19,17 +19,17 @@ return [
     /**
      * Hash Key
      */
-    'hash_key' => env('ECPAY_HASH_KEY', ''),
+    'hash_key' => env('ECPAY_HASH_KEY', '5294y06JbISpM5x9'),
 
     /**
      * Hash IV
      */
-    'hash_iv' => env('ECPAY_HASH_IV', ''),
+    'hash_iv' => env('ECPAY_HASH_IV', 'v77hoKGq4kWxNNIS'),
 
     /**
      * Merchant ID
      */
-    'merchant_id' => env('ECPAY_MERCHANT_ID', ''),
+    'merchant_id' => env('ECPAY_MERCHANT_ID', '2000132'),
 
     /**
      * 加密方式

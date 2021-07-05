@@ -2,19 +2,110 @@
 
 namespace Delta935142\Ecpay;
 
-Class Payment extends \Delta935142\Ecpay\Requests\Payment
+use Delta935142\Ecpay\SDK\AllInOne;
+
+Class Payment
 {
+    /**
+     * 訂單編號
+     *
+     * @var string
+     */
+    protected $tradeNo = '';
+
+    /**
+     * 交易時間
+     *
+     * @var string
+     */
+    protected $tradeDateTime;
+
+    /**
+     * 交易描述
+     *
+     * @var string
+     */
+    protected $tradeDesc;
+
+    /**
+     * 交易金額
+     *
+     * @var integer
+     */
+    protected $total = 0;
+
+    /**
+     * 回傳網址
+     *
+     * @var string
+     */
+    protected $returnUrl;
+
+    /**
+     * 商品
+     *
+     * @var array
+     */
+    protected $items = [];
+
+    /**
+     * 分店代號
+     *
+     * @var string
+     */
+    protected $storeID;
+
+    /**
+     * 自訂欄位
+     *
+     * @var array
+     */
+    protected $customFields = [];
+
+    /**
+     * 發票物件
+     *
+     * @var Invoice
+     */
+    protected $invoiceObj;
+
+    /**
+     * AllInOne
+     *
+     * @var AllInOne
+     */
+    protected $obj;
+
+    public function __construct()
+    {
+        $this->obj = new AllInOne();
+        $this->obj->ServiceURL = (config('ecpay.test_mode'))
+            ? config('ecpay.dev_host')
+            : config('ecpay.host');
+
+        $this->obj->HashKey     = config('ecpay.hash_key');
+        $this->obj->HashIV      = config('ecpay.hash_iv');
+        $this->obj->MerchantID  = config('ecpay.merchant_id');
+        $this->obj->EncryptType = config('ecpay.encrypt_type');
+
+        if (config('ecpay.language')) $this->obj->Send['Language'] = config('ecpay.language');
+        if (config('ecpay.client_back_url')) $this->obj->Send['ClientBackURL'] = config('ecpay.client_back_url');
+
+        $this->tradeDateTime = date('Y/m/d H:i:s'); 
+        $this->returnUrl = config('ecpay.return_url');
+    }
+
     /**
      * 設定訂單編號
      *
      * @param string $tradeNo
      * @return Payment
      */
-    public static function tradeNo(string $tradeNo): Payment
+    public function tradeNo(string $tradeNo): Payment
     {
-        self::$tradeNo = $tradeNo;
+        $this->tradeNo = $tradeNo;
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -23,11 +114,11 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param string $datetime
      * @return Payment
      */
-    public static function tradeDateTime(string $datetime): Payment
+    public function tradeDateTime(string $datetime): Payment
     {
-        self::$tradeDateTime = date('Y/m/d H:i:s', strtotime($datetime));
+        $this->tradeDateTime = date('Y/m/d H:i:s', strtotime($datetime));
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -36,11 +127,11 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param string $text
      * @return Payment
      */
-    public static function tradeDesc(string $text): Payment
+    public function tradeDesc(string $text): Payment
     {
-        self::$tradeDesc = $text;
+        $this->tradeDesc = $text;
 
-        return new self();
+        return $this;
     } 
 
     /**
@@ -49,11 +140,11 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param integer $total
      * @return Payment
      */
-    public static function total(int $total): Payment
+    public function total(int $total): Payment
     {
-        self::$total = $total;
+        $this->total = $total;
 
-        return new self();
+        return $this;
     }
     
     /**
@@ -62,11 +153,11 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param string $url
      * @return Payment
      */
-    public static function returnUrl(string $url): Payment
+    public function returnUrl(string $url): Payment
     {
-        self::$returnUrl = $url;
+        $this->returnUrl = $url;
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -77,7 +168,7 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param array $item
      * @return Payment
      */
-    public static function item(array $item): Payment
+    public function item(array $item): Payment
     {
         $row = [
             'Name'     => $item['name'],
@@ -88,9 +179,9 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
 
         if (isset($item['url'])) $row['URL'] = $item['url'];
 
-        array_push(self::$items, $row);
+        array_push($this->items, $row);
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -101,7 +192,7 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param array $items
      * @return Payment
      */
-    public static function items(array $items): Payment
+    public function items(array $items): Payment
     {
         $arr = [];
 
@@ -116,9 +207,9 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
             if (isset($item['url'])) $arr[]['URL'] = $item['url'];
         }
 
-        self::$items = $arr;
+        $this->items = $arr;
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -127,11 +218,11 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param string $id
      * @return Payment
      */
-    public static function storeID(string $id): Payment
+    public function storeID(string $id): Payment
     {
-        self::$storeID = $id;
+        $this->storeID = $id;
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -140,11 +231,11 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param array $arr
      * @return Payment
      */
-    public static function customFields(array $arr): Payment
+    public function customFields(array $arr): Payment
     {
-        self::$customFields = $arr;
+        $this->customFields = $arr;
 
-        return new self();
+        return $this;
     }
 
     /**
@@ -153,11 +244,141 @@ Class Payment extends \Delta935142\Ecpay\Requests\Payment
      * @param Invoice $invoice
      * @return Payment
      */
-    public static function invoice(Invoice $invoice): Payment
+    public function invoice(Invoice $invoice): Payment
     {
-        self::$invoice = $invoice;
+        $this->invoiceObj = $invoice;
 
-        return new self();
+        return $this;
+    }
+    
+    /**
+     * 信用卡付款
+     *
+     * @param integer $installment 分期[3,6,12,18,24]
+     * @param integer $amount 分期金額
+     * @param boolean $redeem 紅利折抵
+     * @param boolean $unionPay 聯營卡
+     * @return void
+     */
+    public function credit(int $installment = 0, int $amount = 0, bool $redeem = false, bool $unionPay = false)
+    {
+        $orderId = $this->tradeNo ?? uniqid();
+
+        $this->obj->Send['MerchantTradeNo']   = $orderId;
+        $this->obj->Send['MerchantTradeDate'] = $this->tradeDateTime;
+        $this->obj->Send['TradeDesc']         = $this->tradeDesc ?? $orderId;
+        $this->obj->Send['TotalAmount']       = $this->total;
+        $this->obj->Send['ReturnURL']         = $this->returnUrl;
+        $this->obj->Send['ChoosePayment']     = 'Credit';
+        $this->obj->Send['IgnorePayment']     = 'GooglePay';
+        $this->obj->Send['Items']             = $this->items;
+
+        $this->obj->Send['StoreID'] = $this->storeID;
+        if (count($this->customFields)) {
+            for ($i = 0; $i < 4; $i++) {
+                $this->obj->Send['CustomField'.(string) ($i + 1)] = $this->customFields[$i];
+            }
+        }
+
+        $this->obj->SendExtend['CreditInstallment'] = $installment;
+        $this->obj->SendExtend['InstallmentAmount'] = $amount;
+        $this->obj->SendExtend['Redeem']            = $redeem;
+        $this->obj->SendExtend['UnionPay']          = $unionPay;
+
+        $this->setInvoice();
+
+        return $this->obj->CheckOut();
+    }
+
+    /**
+     * ATM
+     *
+     * @param integer $expire 繳費期限(天)
+     * @return void
+     */
+    public function ATM(int $expire = 3)
+    {
+        $orderId = $this->tradeNo ?? uniqid();
+
+        $this->obj->Send['MerchantTradeNo']   = $orderId;
+        $this->obj->Send['MerchantTradeDate'] = $this->tradeDateTime;
+        $this->obj->Send['TradeDesc']         = $this->tradeDesc ?? $orderId;
+        $this->obj->Send['TotalAmount']       = $this->total;
+        $this->obj->Send['ReturnURL']         = $this->returnUrl;
+        $this->obj->Send['ChoosePayment']     = 'ATM';
+        $this->obj->Send['Items']             = $this->items;
+
+        $this->obj->Send['StoreID'] = $this->storeID;
+        if (count($this->customFields)) {
+            for ($i = 0; $i < 4; $i++) {
+                $this->obj->Send['CustomField'.(string) ($i + 1)] = $this->customFields[$i];
+            }
+        }
+
+        $this->obj->SendExtend['ExpireDate']     = $expire;
+        $this->obj->SendExtend['PaymentInfoURL'] = "";
+
+        $this->setInvoice();
+
+        return $this->obj->CheckOut();
+    }
+
+    /**
+     * WebATM
+     *
+     * @return void
+     */
+    public function webATM()
+    {
+        $orderId = $this->tradeNo ?? uniqid();
+
+        $this->obj->Send['ReturnURL']         = $this->returnUrl;
+        $this->obj->Send['MerchantTradeNo']   = $orderId;                     
+        $this->obj->Send['MerchantTradeDate'] = $this->tradeDateTime; 
+        $this->obj->Send['TotalAmount']       = $this->total;                
+        $this->obj->Send['TradeDesc']         = $this->tradeDesc ?? $orderId;
+        $this->obj->Send['ChoosePayment']     = 'WebATM';
+        $this->obj->Send['Items']             = $this->items;
+
+        $this->obj->Send['StoreID'] = $this->storeID;
+        if (count($this->customFields)) {
+            for ($i = 0; $i < 4; $i++) {
+                $this->obj->Send['CustomField'.(string) ($i + 1)] = $this->customFields[$i];
+            }
+        }
+
+        $this->setInvoice();
+
+        return $this->obj->CheckOut();
+    }
+    
+    /**
+     * 電子發票參數
+     *
+     * @return void
+     */
+    private function setInvoice()
+    {
+        if ($this->invoiceObj) {
+            $this->obj->Send['InvoiceMark'] = $this->invoice->getInvoiceMark();
+
+            $this->obj->SendExtend['RelateNumber']       = $this->invoice->getRelateNumber();
+            $this->obj->SendExtend['CustomerIdentifier'] = $this->invoice->getIdentifier();
+            $this->obj->SendExtend['CustomerName']       = $this->invoice->getName();
+            $this->obj->SendExtend['CustomerEmail']      = $this->invoice->getEmail();
+            $this->obj->SendExtend['CustomerPhone']      = $this->invoice->getPhone();
+            $this->obj->SendExtend['TaxType']            = $this->invoice->getTaxType();
+            $this->obj->SendExtend['CustomerAddr']       = $this->invoice->getAddress();
+            $this->obj->SendExtend['InvoiceItems']       = $this->invoice->getItems();
+            $this->obj->SendExtend['InvoiceRemark']      = $this->invoice->getRemark();
+            $this->obj->SendExtend['ClearanceMark']      = $this->invoice->getClearanceMark();
+            $this->obj->SendExtend['Donation']           = $this->invoice->getDonation();
+            $this->obj->SendExtend['Print']              = $this->invoice->getPrint();
+            $this->obj->SendExtend['LoveCode']           = $this->invoice->getLoveCode();
+            $this->obj->SendExtend['CarruerType']        = $this->invoice->getCarruerType();
+            $this->obj->SendExtend['CarruerNum']         = $this->invoice->getCarruerNum();
+            $this->obj->SendExtend['DelayDay']           = $this->invoice->getDelayDay();
+            $this->obj->SendExtend['InvType']            = $this->invoice->getInvType();
+        }
     }
 }
-

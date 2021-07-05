@@ -1,6 +1,6 @@
 <?php
 
-namespace Delta935142\Ecpay\Providers;
+namespace Delta935142\Ecpay;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,18 @@ class EcpayServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->app->singleton('payment', function ($app) {
+            return new Payment($app);
+        });
 
+        $this->app->singleton('invoice', function ($app) {
+            return new Invoice($app);
+        });
+
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/ecpay.php',
+            'ecpay'
+        );
     }
 
     /**
@@ -26,6 +37,11 @@ class EcpayServiceProvider extends ServiceProvider
         $this->publishing();
     }
 
+    /**
+     * 發布設定
+     *
+     * @return void
+     */
     protected function publishing()
     {
         if (! function_exists('config_path')) {
@@ -33,7 +49,7 @@ class EcpayServiceProvider extends ServiceProvider
         }
 
         $this->publishes([
-            __DIR__.'/../../config/ecpay.php' => config_path('ecpay.php'),
+            __DIR__.'/../config/ecpay.php' => config_path('ecpay.php'),
         ], 'config');
     }
 }

@@ -14,14 +14,14 @@ $ composer require delta935142/ecpay
 開啟 `config/app.php`, 並且在 providers 陣列中加入下列:
 
 ```php
-Delta935142\Ecpay\Providers\EcpayServiceProvider::class,
+Delta935142\Ecpay\EcpayServiceProvider::class,
 ```
 
 #### Step 3 - 建立 config
 執行下列指令
 
 ```shell
-$ php artisan vendor:publish --provider="Delta935142\Ecpay\Providers\EcpayServiceProvider"
+$ php artisan vendor:publish --provider="Delta935142\Ecpay\EcpayServiceProvider::class,"
 ```
 
 #### Step 4 - 設定 .env
@@ -35,7 +35,7 @@ ECPAY_MERCHANT_ID=
 
 ## 使用方式
 
-#### 簡訊發送簡單範例
+#### 信用卡
 
 **Example:**
 
@@ -44,13 +44,53 @@ ECPAY_MERCHANT_ID=
 
 // ...
 
-use Delta935142\Ecpay\Payment;
+use Delta935142\Ecpay\Facades\Payment;
 
 class YourClass
 {
     public function yourMethod()
     {
-        Payment::credit();
+        return Payment::credit();
+    }
+}
+```
+
+#### ATM
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Delta935142\Ecpay\Facades\Payment;
+
+class YourClass
+{
+    public function yourMethod()
+    {
+        return Payment::ATM();
+    }
+}
+```
+
+#### WebATM
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Delta935142\Ecpay\Facades\Payment;
+
+class YourClass
+{
+    public function yourMethod()
+    {
+        return Payment::WebATM();
     }
 }
 ```
