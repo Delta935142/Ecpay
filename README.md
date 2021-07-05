@@ -105,7 +105,7 @@ class YourClass
 }
 ```
 
-#### 方法
+#### 可用方法
 
 - `tradeNo(string $tradeNo)`: 交易代號。
 - `tradeDateTime(string $datetime)`: 交易時間。
@@ -115,4 +115,3 @@ class YourClass
 - `items(array $items)`: 項目。如上面範例。
 - `storeID(string $id)`: 分店代號。
 - `customFields(array $arr)`: 自訂欄位。
-- `invoice(Invoice $invoice)`: 發票物件。
