@@ -21,7 +21,7 @@ Delta935142\Ecpay\EcpayServiceProvider::class,
 執行下列指令
 
 ```shell
-$ php artisan vendor:publish --provider="Delta935142\Ecpay\EcpayServiceProvider::class,"
+$ php artisan vendor:publish --provider="Delta935142\Ecpay\EcpayServiceProvider"
 ```
 
 #### Step 4 - 設定 .env
