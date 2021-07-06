@@ -1,4 +1,5 @@
 # Laravel 綠界金流非官方套件
+參數規則請參考綠界 API 文件
 
 ## 安裝
 安裝套件需要先安裝 Composer
@@ -50,10 +51,13 @@ class YourClass
 {
     public function yourMethod()
     {
-        return Payment::tradeNo('Test'.date('YmdHis'))
+        $result = Payment::tradeNo('Test'.date('YmdHis'))
             ->total(100)
             ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
             ->credit();
+
+        if ($result->get('success'))
+            return $result->get('content');
     }
 }
 ```
@@ -74,10 +78,13 @@ class YourClass
 {
     public function yourMethod()
     {
-        return Payment::tradeNo('Test'.date('YmdHis'))
+        $result = Payment::tradeNo('Test'.date('YmdHis'))
             ->total(100)
             ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
             ->ATM();
+
+        if ($result->get('success'))
+            return $result->get('content');
     }
 }
 ```
@@ -97,10 +104,65 @@ class YourClass
 {
     public function yourMethod()
     {
-        return Payment::tradeNo('Test'.date('YmdHis'))
+        $result = Payment::tradeNo('Test'.date('YmdHis'))
             ->total(100)
             ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
             ->WebATM();
+
+        if ($result->get('success'))
+            return $result->get('content');
+    }
+}
+```
+
+#### CVS
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Delta935142\Ecpay\Facades\Payment;
+
+class YourClass
+{
+    public function yourMethod()
+    {
+        $result = Payment::tradeNo('Test'.date('YmdHis'))
+            ->total(100)
+            ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
+            ->cvs();
+
+        if ($result->get('success'))
+            return $result->get('content');
+    }
+}
+```
+
+#### Barcode
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Delta935142\Ecpay\Facades\Payment;
+
+class YourClass
+{
+    public function yourMethod()
+    {
+        $result = Payment::tradeNo('Test'.date('YmdHis'))
+            ->total(100)
+            ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'currency' => "元", 'quantity' => 1]])
+            ->barcode();
+
+        if ($result->get('success'))
+            return $result->get('content');
     }
 }
 ```
@@ -115,3 +177,55 @@ class YourClass
 - `items(array $items)`: 項目。如上面範例。
 - `storeID(string $id)`: 分店代號。
 - `customFields(array $arr)`: 自訂欄位，最多四組。ex: ['custom1', 'custom2', 'custom3', 'custom4']。
+- `invoice(Invoice $invoice)`: 發票物件。
+
+#### 發票物件
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Delta935142\Ecpay\Facades\Invoice;
+
+class YourClass
+{
+    public function yourMethod()
+    {
+        return Invoice::name('xxx')
+            ->identifier('12345678')
+            ->email('test@gmail.com')
+            ->phone('0212345678')
+            ->address('xxxxxxxxxx')
+            ->items([['name' => "歐付寶黑芝麻豆漿", 'price' => 100, 'word' => "個", 'quantity' => 1]])
+            ->remark('xxxxxxxx')
+            ->carruerType('3')
+            ->carruerNum('/aaasssss');
+    }
+}
+```
+
+#### 查詢訂單
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Delta935142\Ecpay\Facades\Trade;
+
+class YourClass
+{
+    public function yourMethod()
+    {
+        $result = Trade::query('12345678');
+
+        if ($result->get('success'))
+            return $result->get('content');
+    }
+}
+```

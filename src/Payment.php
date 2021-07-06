@@ -2,6 +2,7 @@
 
 namespace Delta935142\Ecpay;
 
+use Illuminate\Support\Collection;
 use Delta935142\Ecpay\SDK\AllInOne;
 
 Class Payment
@@ -80,8 +81,8 @@ Class Payment
     {
         $this->obj = new AllInOne();
         $this->obj->ServiceURL = (config('ecpay.test_mode'))
-            ? config('ecpay.dev_host')
-            : config('ecpay.host');
+            ? config('ecpay.payment_host.test')
+            : config('ecpay.payment_host.production');
 
         $this->obj->HashKey     = config('ecpay.hash_key');
         $this->obj->HashIV      = config('ecpay.hash_iv');
@@ -258,9 +259,9 @@ Class Payment
      * @param integer $amount 分期金額
      * @param boolean $redeem 紅利折抵
      * @param boolean $unionPay 聯營卡
-     * @return void
+     * @return Collection
      */
-    public function credit(int $installment = 0, int $amount = 0, bool $redeem = false, bool $unionPay = false)
+    public function credit(int $installment = 0, int $amount = 0, bool $redeem = false, bool $unionPay = false): Collection
     {
         $orderId = $this->tradeNo ?? uniqid();
 
@@ -287,16 +288,22 @@ Class Payment
 
         $this->setInvoice();
 
-        return $this->obj->CheckOut();
+        try {
+            $html = $this->obj->CheckOut();
+        } catch (\Exception $e) {
+            return collect(['success' => false, 'content' => $e->getMessage()]);
+        }
+
+        return collect(['success' => true, 'content' => $html]);
     }
 
     /**
      * ATM
      *
      * @param integer $expire 繳費期限(天)
-     * @return void
+     * @return Collection
      */
-    public function ATM(int $expire = 3)
+    public function ATM(int $expire = 3): Collection
     {
         $orderId = $this->tradeNo ?? uniqid();
 
@@ -315,20 +322,27 @@ Class Payment
             }
         }
 
-        $this->obj->SendExtend['ExpireDate']     = $expire;
-        $this->obj->SendExtend['PaymentInfoURL'] = "";
+        $this->obj->SendExtend['ClientRedirectURL'] = config('client_redirect_url');
+        $this->obj->SendExtend['ExpireDate']        = $expire;
+        $this->obj->SendExtend['PaymentInfoURL']    = config('ecpay.payment_info_url');
 
         $this->setInvoice();
 
-        return $this->obj->CheckOut();
+        try {
+            $html = $this->obj->CheckOut();
+        } catch (\Exception $e) {
+            return collect(['success' => false, 'content' => $e->getMessage()]);
+        }
+
+        return collect(['success' => true, 'content' => $html]);
     }
 
     /**
      * WebATM
      *
-     * @return void
+     * @return Collection
      */
-    public function webATM()
+    public function webATM(): Collection
     {
         $orderId = $this->tradeNo ?? uniqid();
 
@@ -349,7 +363,89 @@ Class Payment
 
         $this->setInvoice();
 
-        return $this->obj->CheckOut();
+        try {
+            $html = $this->obj->CheckOut();
+        } catch (\Exception $e) {
+            return collect(['success' => false, 'content' => $e->getMessage()]);
+        }
+
+        return collect(['success' => true, 'content' => $html]);
+    }
+
+    /**
+     * CVS
+     *
+     * @param integer $expire 繳費期限(天)
+     * @return Collection
+     */
+    public function CVS(int $expire = 7): Collection
+    {
+        $orderId = $this->tradeNo ?? uniqid();
+
+        $this->obj->Send['ReturnURL']         = $this->returnUrl;
+        $this->obj->Send['MerchantTradeNo']   = $orderId;                     
+        $this->obj->Send['MerchantTradeDate'] = $this->tradeDateTime; 
+        $this->obj->Send['TotalAmount']       = $this->total;                
+        $this->obj->Send['TradeDesc']         = $this->tradeDesc ?? $orderId;
+        $this->obj->Send['ChoosePayment']     = 'CVS';
+        $this->obj->Send['Items']             = $this->items;
+
+        if (count($this->customFields)) {
+            for ($i = 0; $i < 4; $i++) {
+                $this->obj->Send['Desc_'.(string) ($i + 1)] = $this->customFields[$i];
+            }
+        }
+        $this->obj->SendExtend['PaymentInfoURL']    = config('ecpay.payment_info_url');
+        $this->obj->SendExtend['ClientRedirectURL'] = config('client_redirect_url');
+        $this->obj->SendExtend['StoreExpireDate']   = $expire;
+
+        $this->setInvoice();
+
+        try {
+            $html = $this->obj->CheckOut();
+        } catch (\Exception $e) {
+            return collect(['success' => false, 'content' => $e->getMessage()]);
+        }
+
+        return collect(['success' => true, 'content' => $html]);
+    }
+
+    /**
+     * Barcode
+     *
+     * @param integer $expire 繳費期限(天)
+     * @return Collection
+     */
+    public function barcode(int $expire = 7): Collection
+    {
+        $orderId = $this->tradeNo ?? uniqid();
+
+        $this->obj->Send['ReturnURL']         = $this->returnUrl;
+        $this->obj->Send['MerchantTradeNo']   = $orderId;                     
+        $this->obj->Send['MerchantTradeDate'] = $this->tradeDateTime; 
+        $this->obj->Send['TotalAmount']       = $this->total;                
+        $this->obj->Send['TradeDesc']         = $this->tradeDesc ?? $orderId;
+        $this->obj->Send['ChoosePayment']     = 'BARCODE';
+        $this->obj->Send['Items']             = $this->items;
+
+        if (count($this->customFields)) {
+            for ($i = 0; $i < 4; $i++) {
+                $this->obj->Send['Desc_'.(string) ($i + 1)] = $this->customFields[$i];
+            }
+        }
+        $this->obj->SendExtend['PaymentInfoURL']    = config('ecpay.payment_info_url');
+        $this->obj->SendExtend['ClientRedirectURL'] = config('client_redirect_url');
+        $this->obj->SendExtend['StoreExpireDate']   = $expire;
+
+        $this->setInvoice();
+
+        try {
+            $html = $this->obj->CheckOut();
+        } catch (\Exception $e) {
+            return collect(['success' => false, 'content' => $e->getMessage()]);
+        }
+
+        return collect(['success' => true, 'content' => $html]);
     }
     
     /**
@@ -360,25 +456,28 @@ Class Payment
     private function setInvoice()
     {
         if ($this->invoiceObj) {
-            $this->obj->Send['InvoiceMark'] = $this->invoice->getInvoiceMark();
+            $this->obj->Send['InvoiceMark'] = $this->invoiceObj->getInvoiceMark();
 
-            $this->obj->SendExtend['RelateNumber']       = $this->invoice->getRelateNumber();
-            $this->obj->SendExtend['CustomerIdentifier'] = $this->invoice->getIdentifier();
-            $this->obj->SendExtend['CustomerName']       = $this->invoice->getName();
-            $this->obj->SendExtend['CustomerEmail']      = $this->invoice->getEmail();
-            $this->obj->SendExtend['CustomerPhone']      = $this->invoice->getPhone();
-            $this->obj->SendExtend['TaxType']            = $this->invoice->getTaxType();
-            $this->obj->SendExtend['CustomerAddr']       = $this->invoice->getAddress();
-            $this->obj->SendExtend['InvoiceItems']       = $this->invoice->getItems();
-            $this->obj->SendExtend['InvoiceRemark']      = $this->invoice->getRemark();
-            $this->obj->SendExtend['ClearanceMark']      = $this->invoice->getClearanceMark();
-            $this->obj->SendExtend['Donation']           = $this->invoice->getDonation();
-            $this->obj->SendExtend['Print']              = $this->invoice->getPrint();
-            $this->obj->SendExtend['LoveCode']           = $this->invoice->getLoveCode();
-            $this->obj->SendExtend['CarruerType']        = $this->invoice->getCarruerType();
-            $this->obj->SendExtend['CarruerNum']         = $this->invoice->getCarruerNum();
-            $this->obj->SendExtend['DelayDay']           = $this->invoice->getDelayDay();
-            $this->obj->SendExtend['InvType']            = $this->invoice->getInvType();
+            $this->obj->SendExtend['RelateNumber']       = $this->invoiceObj->getRelateNumber();
+            $this->obj->SendExtend['CustomerIdentifier'] = $this->invoiceObj->getIdentifier();
+            $this->obj->SendExtend['CustomerName']       = $this->invoiceObj->getName();
+            $this->obj->SendExtend['CustomerEmail']      = $this->invoiceObj->getEmail();
+            $this->obj->SendExtend['CustomerPhone']      = $this->invoiceObj->getPhone();
+            $this->obj->SendExtend['TaxType']            = $this->invoiceObj->getTaxType();
+            $this->obj->SendExtend['CustomerAddr']       = $this->invoiceObj->getAddress();
+            $this->obj->SendExtend['InvoiceItems']       = $this->invoiceObj->getItems();
+            $this->obj->SendExtend['InvoiceRemark']      = $this->invoiceObj->getRemark();
+            $this->obj->SendExtend['ClearanceMark']      = $this->invoiceObj->getClearanceMark();
+
+            if (!$this->invoiceObj->getIdentifier())
+                $this->obj->SendExtend['Donation'] = $this->invoiceObj->getDonation();
+
+            $this->obj->SendExtend['Print']       = $this->invoiceObj->getPrint();
+            $this->obj->SendExtend['LoveCode']    = $this->invoiceObj->getLoveCode();
+            $this->obj->SendExtend['CarruerType'] = $this->invoiceObj->getCarruerType();
+            $this->obj->SendExtend['CarruerNum']  = $this->invoiceObj->getCarruerNum();
+            $this->obj->SendExtend['DelayDay']    = $this->invoiceObj->getDelayDay();
+            $this->obj->SendExtend['InvType']     = $this->invoiceObj->getInvType();
         }
     }
 }

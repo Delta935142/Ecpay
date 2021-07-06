@@ -2,14 +2,22 @@
 
 return [
     /**
-     * 主機位置
+     * 付款主機位置
+     * production 正式主機、test 測試主機
      */
-    'host' => 'https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5',
+    'payment_host' => [
+        'production' => 'https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5',
+        'test'       => 'https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5',
+    ],
 
     /**
-     * 測試主機位置
+     * 訂單主機位置
+     * production 正式主機、test 測試主機
      */
-    'dev_host' => 'https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5',
+    'trade_host' => [
+        'production' => 'https://payment.ecpay.com.tw/Cashier/QueryTradeInfo/V5',
+        'test'       => 'https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5',
+    ],
     
     /**
      * 是否開啟測試模式
@@ -51,4 +59,16 @@ return [
      * 產生返回網站的按鈕
      */
     'client_back_url' => null,
+
+    /**
+     * Server 端回傳付款相關資訊
+     * ATM、CVS、barcode使用
+     */
+    'payment_info_url' => null,
+
+    /**
+     * Client 端回傳付款相關資訊
+     * ATM、CVS、barcode使用
+     */
+    'client_redirect_url' => null
 ];
