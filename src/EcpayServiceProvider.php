@@ -21,6 +21,10 @@ class EcpayServiceProvider extends ServiceProvider
             return new Invoice($app);
         });
 
+        $this->app->singleton('trade', function ($app) {
+            return new Trade($app);
+        });
+
         $this->mergeConfigFrom(
             __DIR__.'/../config/ecpay.php',
             'ecpay'
