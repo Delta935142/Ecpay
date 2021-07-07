@@ -1,5 +1,5 @@
 # Laravel 綠界金流非官方套件
-參數規則請參考綠界 API 文件
+參數規則請參考[綠界 API 文件](https://www.ecpay.com.tw/Content/files/ecpay_011.pdf)
 
 ## 安裝
 安裝套件需要先安裝 Composer
