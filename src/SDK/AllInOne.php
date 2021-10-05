@@ -112,9 +112,9 @@ class AllInOne
     }
 
     //取得付款結果通知的方法
-    function CheckOutFeedback() 
+    function CheckOutFeedback(array $input) 
     {
-        return $arFeedback = CheckOutFeedback::CheckOut(array_merge($_POST, array('EncryptType' => $this->EncryptType)),$this->HashKey,$this->HashIV,0);
+        return $arFeedback = CheckOutFeedback::CheckOut(array_merge($input, array('EncryptType' => $this->EncryptType)),$this->HashKey,$this->HashIV,0);
     }
 
     //訂單查詢作業

@@ -167,6 +167,29 @@ class YourClass
 }
 ```
 
+#### 綠界回應
+
+**Example:**
+
+```php
+<?php namespace Your\Namespace;
+
+// ...
+
+use Illuminate\Http\Request;
+use Delta935142\Ecpay\Facades\PaymentStatus;
+
+class YourClass
+{
+    public function yourMethod(Request $request)
+    {
+        $result = PaymentStatus::response($request->input());
+
+        return $result->get('content');
+    }
+}
+```
+
 #### 可用方法
 
 - `tradeNo(string $tradeNo)`: 交易代號。

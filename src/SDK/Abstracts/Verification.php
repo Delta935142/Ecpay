@@ -2,33 +2,33 @@
 
 namespace Delta935142\Ecpay\SDK\Abstracts;
 
-Abstract class Verification
+abstract class Verification
 {
     // 電子發票延伸參數。
     public $arInvoice = array(
-            "RelateNumber",
-            "CustomerIdentifier",
-            "CarruerType" ,
-            "CustomerID" ,
-            "Donation" ,
-            "Print" ,
-            "TaxType",
-            "CustomerName" ,
-            "CustomerAddr" ,
-            "CustomerPhone" ,
-            "CustomerEmail" ,
-            "ClearanceMark" ,
-            "CarruerNum" ,
-            "LoveCode" ,
-            "InvoiceRemark" ,
-            "DelayDay",
-            "InvoiceItemName",
-            "InvoiceItemCount",
-            "InvoiceItemWord",
-            "InvoiceItemPrice",
-            "InvoiceItemTaxType",
-            "InvType"
-        );
+        "RelateNumber",
+        "CustomerIdentifier",
+        "CarruerType",
+        "CustomerID",
+        "Donation",
+        "Print",
+        "TaxType",
+        "CustomerName",
+        "CustomerAddr",
+        "CustomerPhone",
+        "CustomerEmail",
+        "ClearanceMark",
+        "CarruerNum",
+        "LoveCode",
+        "InvoiceRemark",
+        "DelayDay",
+        "InvoiceItemName",
+        "InvoiceItemCount",
+        "InvoiceItemWord",
+        "InvoiceItemPrice",
+        "InvoiceItemTaxType",
+        "InvType"
+    );
 
     // 付款方式延伸參數
     public $arPayMentExtend = array();
@@ -87,7 +87,7 @@ Abstract class Verification
             array_push($arErrors, 'EncryptType max langth as 1.');
         }
 
-        if (sizeof($arErrors)>0) throw new \Exception(join('<br>', $arErrors));
+        if (sizeof($arErrors) > 0) throw new \Exception(join('<br>', $arErrors));
 
         if (!$arParameters['PlatformID']) {
             unset($arParameters['PlatformID']);
@@ -98,21 +98,21 @@ Abstract class Verification
             unset($arParameters['IgnorePayment']);
         }
 
-        return $arParameters ;
+        return $arParameters;
     }
 
     //檢查延伸參數
-    public function check_extend_string($arExtend = array(),$InvoiceMark = '')
+    public function check_extend_string($arExtend = array(), $InvoiceMark = '')
     {
         //沒設定參數的話，就給預設參數
         foreach ($this->arPayMentExtend as $key => $value) {
-            if(!isset($arExtend[$key])) $arExtend[$key] = $value;
+            if (!isset($arExtend[$key])) $arExtend[$key] = $value;
         }
 
         //若有開發票，檢查一下發票參數
         if ($InvoiceMark == 'Y') $arExtend = $this->check_invoiceString($arExtend);
 
-        return $arExtend ;
+        return $arExtend;
     }
 
     //檢查商品
@@ -125,7 +125,7 @@ Abstract class Verification
             foreach ($arParameters['Items'] as $keys => $value) {
                 $szItemName .= vsprintf('#%s %d %s x %u', $arParameters['Items'][$keys]);
                 if (!array_key_exists('ItemURL', $arParameters)) {
-                    if(array_key_exists('URL', $arParameters['Items'][$keys])) {
+                    if (array_key_exists('URL', $arParameters['Items'][$keys])) {
                         $arParameters['ItemURL'] = $arParameters['Items'][$keys]['URL'];
                     }
                 }
@@ -133,29 +133,29 @@ Abstract class Verification
 
             if (strlen($szItemName) > 0) {
                 $szItemName = mb_substr($szItemName, 1, 200);
-                $arParameters['ItemName'] = $szItemName ;
+                $arParameters['ItemName'] = $szItemName;
             }
         } else {
             array_push($arErrors, "Goods information not found.");
         }
 
-        if(sizeof($arErrors)>0) throw new \Exception(join('<br>', $arErrors));
+        if (sizeof($arErrors) > 0) throw new \Exception(join('<br>', $arErrors));
 
         unset($arParameters['Items']);
-        return $arParameters ;
+        return $arParameters;
     }
 
     //過濾多餘參數
-    public function filter_string($arExtend = array(),$InvoiceMark = '')
+    public function filter_string($arExtend = array(), $InvoiceMark = '')
     {
         $arPayMentExtend = array_merge(array_keys($this->arPayMentExtend), ($InvoiceMark == '') ? array() : $this->arInvoice);
         foreach ($arExtend as $key => $value) {
-            if (!in_array($key,$arPayMentExtend )) {
+            if (!in_array($key, $arPayMentExtend)) {
                 unset($arExtend[$key]);
             }
         }
 
-        return $arExtend ;
+        return $arExtend;
     }
 
     //檢查電子發票參數
@@ -164,102 +164,100 @@ Abstract class Verification
         $arErrors = array();
 
         // 廠商自訂編號RelateNumber(不可為空)
-        if(!array_key_exists('RelateNumber', $arExtend)){
+        if (!array_key_exists('RelateNumber', $arExtend)) {
             array_push($arErrors, 'RelateNumber is required.');
-        }else{
+        } else {
             if (strlen($arExtend['RelateNumber']) > 30) {
                 array_push($arErrors, "RelateNumber max length as 30.");
             }
         }
 
         // 統一編號CustomerIdentifier(預設為空字串)
-        if(!array_key_exists('CustomerIdentifier', $arExtend)){
+        if (!array_key_exists('CustomerIdentifier', $arExtend)) {
             $arExtend['CustomerIdentifier'] = '';
-        }else{
+        } else {
 
-            if( strlen( $arExtend['CustomerIdentifier'] ) > 0  )
-            {
-                if( !preg_match('/^[0-9]{8}$/', $arExtend['CustomerIdentifier']) )
-                {
+            if (strlen($arExtend['CustomerIdentifier']) > 0) {
+                if (!preg_match('/^[0-9]{8}$/', $arExtend['CustomerIdentifier'])) {
                     array_push($arErrors, '6:CustomerIdentifier length should be 8.');
                 }
             }
         }
 
         // 載具類別CarruerType(預設為None)
-        if(!array_key_exists('CarruerType', $arExtend)){
-            $arExtend['CarruerType'] = CarruerType::None ;
-        }else{
+        if (!array_key_exists('CarruerType', $arExtend)) {
+            $arExtend['CarruerType'] = CarruerType::None;
+        } else {
             //有設定統一編號的話，載具類別不可為合作特店載具或自然人憑證載具。
             $notPrint = array(CarruerType::Member, CarruerType::Citizen);
-            if(strlen($arExtend['CustomerIdentifier']) > 0 && in_array($arExtend['CarruerType'], $notPrint)){
+            if (strlen($arExtend['CustomerIdentifier']) > 0 && in_array($arExtend['CarruerType'], $notPrint)) {
                 array_push($arErrors, "CarruerType should NOT be Member or Citizen.");
             }
         }
 
         // 客戶代號CustomerID(預設為空字串)
-        if(!array_key_exists('CustomerID', $arExtend)) {
+        if (!array_key_exists('CustomerID', $arExtend)) {
             $arExtend['CustomerID'] = '';
         }
         // 捐贈註記 Donation(預設為No)
-        if(!array_key_exists('Donation', $arExtend)){
-            $arExtend['Donation'] = Donation::No ;
-        }else{
+        if (!array_key_exists('Donation', $arExtend)) {
+            $arExtend['Donation'] = Donation::No;
+        } else {
             //若有帶統一編號，不可捐贈
-            if(strlen($arExtend['CustomerIdentifier']) > 0 && $arExtend['Donation'] != Donation::No){
+            if (strlen($arExtend['CustomerIdentifier']) > 0 && $arExtend['Donation'] != Donation::No) {
                 array_push($arErrors, "Donation should be No.");
             }
         }
 
         // 列印註記Print(預設為No)
-        if(!array_key_exists('Print', $arExtend)){
+        if (!array_key_exists('Print', $arExtend)) {
             $arExtend['Print'] = PrintMark::No;
-        }else{
+        } else {
             //捐贈註記為捐贈(Yes)時，請設定不列印(No)
-            if($arExtend['Donation'] == Donation::Yes && $arExtend['Print'] != PrintMark::No){
+            if ($arExtend['Donation'] == Donation::Yes && $arExtend['Print'] != PrintMark::No) {
                 array_push($arErrors, "Print should be No.");
             }
             // 統一編號不為空字串時，請設定列印(Yes)
-            if(strlen($arExtend['CustomerIdentifier']) > 0 && $arExtend['Print'] != PrintMark::Yes){
+            if (strlen($arExtend['CustomerIdentifier']) > 0 && $arExtend['Print'] != PrintMark::Yes) {
                 array_push($arErrors, "Print should be Yes.");
             }
         }
         // 客戶名稱CustomerName(UrlEncode, 預設為空字串)
-        if(!array_key_exists('CustomerName', $arExtend)){
+        if (!array_key_exists('CustomerName', $arExtend)) {
             $arExtend['CustomerName'] = '';
-        }else{
+        } else {
             if (mb_strlen($arExtend['CustomerName'], 'UTF-8') > 20) {
-                  array_push($arErrors, "CustomerName max length as 20.");
+                array_push($arErrors, "CustomerName max length as 20.");
             }
             // 列印註記為列印(Yes)時，此參數不可為空字串
-            if($arExtend['Print'] == PrintMark::Yes && strlen($arExtend['CustomerName']) == 0){
+            if ($arExtend['Print'] == PrintMark::Yes && strlen($arExtend['CustomerName']) == 0) {
                 array_push($arErrors, "CustomerName is required.");
             }
         }
 
         // 客戶地址CustomerAddr(UrlEncode, 預設為空字串)
-        if(!array_key_exists('CustomerAddr', $arExtend)){
+        if (!array_key_exists('CustomerAddr', $arExtend)) {
             $arExtend['CustomerAddr'] = '';
-        }else{
+        } else {
             if (mb_strlen($arExtend['CustomerAddr'], 'UTF-8') > 200) {
-                  array_push($arErrors, "CustomerAddr max length as 200.");
+                array_push($arErrors, "CustomerAddr max length as 200.");
             }
             // 列印註記為列印(Yes)時，此參數不可為空字串
-            if($arExtend['Print'] == PrintMark::Yes && strlen($arExtend['CustomerAddr']) == 0){
+            if ($arExtend['Print'] == PrintMark::Yes && strlen($arExtend['CustomerAddr']) == 0) {
                 array_push($arErrors, "CustomerAddr is required.");
             }
         }
         // 客戶電話CustomerPhone
-        if(!array_key_exists('CustomerPhone', $arExtend)){
+        if (!array_key_exists('CustomerPhone', $arExtend)) {
             $arExtend['CustomerPhone'] = '';
-        }else{
+        } else {
             if (strlen($arExtend['CustomerPhone']) > 20) array_push($arErrors, "CustomerPhone max length as 20.");
         }
 
         // 客戶信箱CustomerEmail
-        if(!array_key_exists('CustomerEmail', $arExtend)){
+        if (!array_key_exists('CustomerEmail', $arExtend)) {
             $arExtend['CustomerEmail'] = '';
-        }else{
+        } else {
             if (strlen($arExtend['CustomerEmail']) > 200) array_push($arErrors, "CustomerEmail max length as 200.");
         }
 
@@ -270,11 +268,11 @@ Abstract class Verification
         if (strlen($arExtend['TaxType']) == 0) array_push($arErrors, "TaxType is required.");
 
         //通關方式 ClearanceMark(預設為空字串)
-        if(!array_key_exists('ClearanceMark', $arExtend)) {
+        if (!array_key_exists('ClearanceMark', $arExtend)) {
             $arExtend['ClearanceMark'] = '';
-        }else{
+        } else {
             //課稅類別為零稅率(Zero)時，ClearanceMark不可為空字串
-            if($arExtend['TaxType'] == TaxType::Zero && ($arExtend['ClearanceMark'] != ClearanceMark::Yes || $arExtend['ClearanceMark'] != ClearanceMark::No)) {
+            if ($arExtend['TaxType'] == TaxType::Zero && ($arExtend['ClearanceMark'] != ClearanceMark::Yes || $arExtend['ClearanceMark'] != ClearanceMark::No)) {
                 array_push($arErrors, "ClearanceMark is required.");
             }
             if (strlen($arExtend['ClearanceMark']) > 0 && $arExtend['TaxType'] != TaxType::Zero) {
@@ -287,22 +285,22 @@ Abstract class Verification
             $arExtend['CarruerNum'] = '';
         } else {
             switch ($arExtend['CarruerType']) {
-                // 載具類別為無載具(None)或會員載具(Member)時，系統自動忽略載具編號
+                    // 載具類別為無載具(None)或會員載具(Member)時，系統自動忽略載具編號
                 case CarruerType::None:
                 case CarruerType::Member:
-                break;
-                // 載具類別為買受人自然人憑證(Citizen)時，請設定自然人憑證號碼，前2碼為大小寫英文，後14碼為數字
+                    break;
+                    // 載具類別為買受人自然人憑證(Citizen)時，請設定自然人憑證號碼，前2碼為大小寫英文，後14碼為數字
                 case CarruerType::Citizen:
-                    if (!preg_match('/^[a-zA-Z]{2}\d{14}$/', $arExtend['CarruerNum'])){
+                    if (!preg_match('/^[a-zA-Z]{2}\d{14}$/', $arExtend['CarruerNum'])) {
                         array_push($arErrors, "Invalid CarruerNum.");
                     }
-                break;
-                // 載具類別為買受人手機條碼(Cellphone)時，請設定手機條碼，第1碼為「/」，後7碼為大小寫英文、數字、「+」、「-」或「.」
+                    break;
+                    // 載具類別為買受人手機條碼(Cellphone)時，請設定手機條碼，第1碼為「/」，後7碼為大小寫英文、數字、「+」、「-」或「.」
                 case CarruerType::Cellphone:
                     if (!preg_match('/^\/{1}[0-9a-zA-Z+-.]{7}$/', $arExtend['CarruerNum'])) {
                         array_push($arErrors, "Invalid CarruerNum.");
                     }
-                break;
+                    break;
 
                 default:
                     array_push($arErrors, "Please remove CarruerNum.");
@@ -310,7 +308,7 @@ Abstract class Verification
         }
 
         // 愛心碼 LoveCode(預設為空字串)
-        if(!array_key_exists('LoveCode', $arExtend)) $arExtend['LoveCode'] = '';
+        if (!array_key_exists('LoveCode', $arExtend)) $arExtend['LoveCode'] = '';
         // 捐贈註記為捐贈(Yes)時，參數長度固定3~7碼，請設定全數字或第1碼大小寫「X」，後2~6碼全數字
         if ($arExtend['Donation'] == Donation::Yes) {
             if (!preg_match('/^([xX]{1}[0-9]{2,6}|[0-9]{3,7})$/', $arExtend['LoveCode'])) {
@@ -319,10 +317,10 @@ Abstract class Verification
         }
 
         //備註 InvoiceRemark(UrlEncode, 預設為空字串)
-        if(!array_key_exists('InvoiceRemark', $arExtend)) $arExtend['InvoiceRemark'] = '';
+        if (!array_key_exists('InvoiceRemark', $arExtend)) $arExtend['InvoiceRemark'] = '';
 
         // 延遲天數 DelayDay(不可為空, 預設為0) 延遲天數，範圍0~15，設定為0時，付款完成後立即開立發票
-        if(!array_key_exists('DelayDay', $arExtend)) $arExtend['DelayDay'] = 0 ;
+        if (!array_key_exists('DelayDay', $arExtend)) $arExtend['DelayDay'] = 0;
         if ($arExtend['DelayDay'] < 0 or $arExtend['DelayDay'] > 15) array_push($arErrors, "DelayDay should be 0 ~ 15.");
 
 
@@ -330,9 +328,9 @@ Abstract class Verification
         if (!array_key_exists('InvType', $arExtend)) array_push($arErrors, "InvType is required.");
 
         //商品相關整理
-        if(!array_key_exists('InvoiceItems', $arExtend)){
+        if (!array_key_exists('InvoiceItems', $arExtend)) {
             array_push($arErrors, "Invoice Goods information not found.");
-        }else{
+        } else {
             $InvSptr = '|';
             $tmpItemName = array();
             $tmpItemCount = array();
@@ -360,7 +358,7 @@ Abstract class Verification
             if ($arExtend['TaxType'] == TaxType::Mix) {
                 if (in_array(TaxType::Dutiable, $tmpItemTaxType) and in_array(TaxType::Free, $tmpItemTaxType)) {
                     // Do nothing
-                }  else {
+                } else {
                     $tmpItemTaxType = array();
                 }
             }
@@ -376,13 +374,13 @@ Abstract class Verification
         }
 
         $encode_fields = array(
-                'CustomerName',
-                'CustomerAddr',
-                'CustomerEmail',
-                'InvoiceItemName',
-                'InvoiceItemWord',
-                'InvoiceRemark'
-            );
+            'CustomerName',
+            'CustomerAddr',
+            'CustomerEmail',
+            'InvoiceItemName',
+            'InvoiceItemWord',
+            'InvoiceRemark'
+        );
         foreach ($encode_fields as $tmp_field) {
             $arExtend[$tmp_field] = static::ecpay_urlencode($arExtend[$tmp_field]);
         }
@@ -391,7 +389,7 @@ Abstract class Verification
             throw new \Exception(join('<br>', $arErrors));
         }
 
-        return $arExtend ;
+        return $arExtend;
     }
 
     /**
@@ -400,7 +398,7 @@ Abstract class Verification
      * @param  string $sParameters
      * @return string $sParameters
      */
-    public static function ecpay_urlencode($sParameters) 
+    public static function ecpay_urlencode($sParameters)
     {
         // URL Encode編碼
         $sParameters = urlencode($sParameters);
